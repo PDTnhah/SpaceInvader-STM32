@@ -1,0 +1,707 @@
+{
+  "Application": {
+    "Screens": [
+      {
+        "Name": "Screen1",
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "image3",
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Full-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "image2",
+            "X": 10,
+            "Y": 22,
+            "Width": 220,
+            "Height": 120,
+            "RelativeFilename": "name.png"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "flexButton1",
+            "X": 20,
+            "Y": 224,
+            "Width": 200,
+            "Height": 60,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "ImageButtonStyle",
+                "LockFlexButtonToImageSize": true,
+                "ImageReleased": "play.png",
+                "ImagePressed": "play.png"
+              }
+            ]
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "flexButton1"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Screen2"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Screen2",
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "bg11",
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Space-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bg21",
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Stars-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bg22",
+            "X": -80,
+            "Y": -320,
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Stars-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy12",
+            "X": 169,
+            "Y": 102,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy11",
+            "X": 127,
+            "Y": 102,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy10",
+            "X": 87,
+            "Y": 102,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy9",
+            "X": 46,
+            "Y": 102,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy8",
+            "X": 46,
+            "Y": 34,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy7",
+            "X": 127,
+            "Y": 69,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy6",
+            "X": 87,
+            "Y": 69,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy5",
+            "X": 46,
+            "Y": 69,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy4",
+            "X": 87,
+            "Y": 34,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy3",
+            "X": 169,
+            "Y": 34,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy2",
+            "X": 127,
+            "Y": 34,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy1",
+            "X": 169,
+            "Y": 69,
+            "Width": 33,
+            "Height": 25,
+            "RelativeFilename": "enemy.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "player",
+            "X": 96,
+            "Y": 248,
+            "Width": 49,
+            "Height": 49,
+            "RelativeFilename": "player.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "player_bullet",
+            "X": 113,
+            "Y": 232,
+            "Width": 16,
+            "Height": 16,
+            "Visible": false,
+            "RelativeFilename": "players_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "enemy_bullet",
+            "X": 95,
+            "Y": 85,
+            "Width": 16,
+            "Height": 16,
+            "Visible": false,
+            "RelativeFilename": "enemy_bullets.png"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "backButton",
+            "X": 1,
+            "Y": 275,
+            "Width": 45,
+            "Height": 45,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "ImageButtonStyle",
+                "LockFlexButtonToImageSize": true,
+                "ImageReleased": "back.png\\back.png",
+                "ImagePressed": "back.png\\back.png"
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "highScoreText",
+            "Y": 25,
+            "Width": 80,
+            "Height": 19,
+            "TextId": "__SingleUse_ZJTO",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "TextId": "__SingleUse_6L17",
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "scoreText",
+            "X": 1,
+            "Width": 79,
+            "Height": 18,
+            "TextId": "__SingleUse_23UU",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "TextId": "__SingleUse_HYMF",
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "backButton"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Screen1"
+            }
+          },
+          {
+            "InteractionName": "Interaction2",
+            "Trigger": {
+              "Type": "TriggerPhysicalButtonClicked",
+              "ButtonKey": 1
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Screen4"
+            }
+          },
+          {
+            "InteractionName": "Interaction3",
+            "Trigger": {
+              "Type": "TriggerPhysicalButtonClicked",
+              "ButtonKey": 20
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Screen3"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Screen3",
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "bg11",
+            "X": 1,
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Space-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bg21",
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Stars-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bg22",
+            "X": 1,
+            "Y": -320,
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Stars-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "boss",
+            "X": 64,
+            "Y": 25,
+            "Width": 112,
+            "Height": 112,
+            "RelativeFilename": "boss.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet5",
+            "X": 137,
+            "Y": 129,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet4",
+            "X": 64,
+            "Y": 129,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet3",
+            "X": 160,
+            "Y": 129,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet2",
+            "X": 112,
+            "Y": 129,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet1",
+            "X": 88,
+            "Y": 129,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "player",
+            "X": 96,
+            "Y": 248,
+            "Width": 49,
+            "Height": 49,
+            "RelativeFilename": "player.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "player_bullet",
+            "X": 113,
+            "Y": 232,
+            "Width": 16,
+            "Height": 16,
+            "Visible": false,
+            "RelativeFilename": "players_bullets.png"
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "backButton",
+            "X": 1,
+            "Y": 275,
+            "Width": 45,
+            "Height": 45,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "ImageButtonStyle",
+                "LockFlexButtonToImageSize": true,
+                "ImageReleased": "back.png\\back.png",
+                "ImagePressed": "back.png\\back.png"
+              }
+            ]
+          },
+          {
+            "Type": "TextArea",
+            "Name": "highScoreText",
+            "Y": 25,
+            "Width": 80,
+            "Height": 19,
+            "TextId": "__SingleUse_GGD8",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "TextId": "__SingleUse_218J",
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "scoreText",
+            "X": 1,
+            "Width": 79,
+            "Height": 18,
+            "TextId": "__SingleUse_JIW5",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "TextId": "__SingleUse_6VRD",
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "backButton"
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Screen1"
+            }
+          },
+          {
+            "InteractionName": "Interaction2",
+            "Trigger": {
+              "Type": "TriggerPhysicalButtonClicked",
+              "ButtonKey": 1
+            },
+            "Action": {
+              "Type": "ActionGotoScreen",
+              "ScreenTransitionType": "ScreenTransitionNone",
+              "ActionComponent": "Screen4"
+            }
+          }
+        ]
+      },
+      {
+        "Name": "Screen4",
+        "Components": [
+          {
+            "Type": "Image",
+            "Name": "image1",
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Space-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "image2",
+            "X": -80,
+            "Width": 320,
+            "Height": 320,
+            "RelativeFilename": "Background_Stars-0001.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "imgGameOver",
+            "X": 10,
+            "Y": 20,
+            "Width": 220,
+            "Height": 140,
+            "Visible": false,
+            "RelativeFilename": "game_over.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "imgVictory",
+            "Y": 21,
+            "Width": 240,
+            "Height": 160,
+            "Visible": false,
+            "RelativeFilename": "victory.png"
+          },
+          {
+            "Type": "TextArea",
+            "Name": "txtFinalScore",
+            "X": 74,
+            "Y": 180,
+            "Width": 111,
+            "Height": 17,
+            "TextId": "__SingleUse_NFCM",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "TextId": "__SingleUse_M49V",
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          },
+          {
+            "Type": "TextArea",
+            "Name": "txtHighScore",
+            "X": 74,
+            "Y": 197,
+            "Width": 111,
+            "Height": 17,
+            "TextId": "__SingleUse_ZSF2",
+            "TextRotation": "0",
+            "Color": {
+              "Red": 255,
+              "Green": 255,
+              "Blue": 255
+            },
+            "Wildcard1": {
+              "TextId": "__SingleUse_8POJ",
+              "UseBuffer": true,
+              "BufferSize": 16
+            }
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "btnRetry",
+            "X": 30,
+            "Y": 235,
+            "Width": 180,
+            "Height": 60,
+            "Visible": false,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "ImageButtonStyle",
+                "LockFlexButtonToImageSize": true,
+                "ImageReleased": "retry.png",
+                "ImagePressed": "retry.png"
+              }
+            ]
+          },
+          {
+            "Type": "FlexButton",
+            "Name": "btnPlayAgain",
+            "X": 15,
+            "Y": 239,
+            "Width": 210,
+            "Height": 60,
+            "Visible": false,
+            "ButtonTrigger": {
+              "Type": "ClickButtonTrigger"
+            },
+            "ButtonStyles": [
+              {
+                "Type": "ImageButtonStyle",
+                "LockFlexButtonToImageSize": true,
+                "ImageReleased": "play_again.png",
+                "ImagePressed": "play_again.png"
+              }
+            ]
+          }
+        ],
+        "Interactions": [
+          {
+            "InteractionName": "Interaction1",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "btnRetry"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "retryClicked"
+            }
+          },
+          {
+            "InteractionName": "Interaction2",
+            "Trigger": {
+              "Type": "TriggerClicked",
+              "TriggerComponent": "btnPlayAgain"
+            },
+            "Action": {
+              "Type": "ActionCustom",
+              "FunctionName": "playAgainClicked"
+            }
+          }
+        ]
+      }
+    ],
+    "CustomContainerDefinitions": [],
+    "Name": "SpaceInvaders_STM32",
+    "Resolution": {
+      "Width": 240,
+      "Height": 320
+    },
+    "SelectedColorDepth": 16,
+    "StartupScreenName": "Screen1",
+    "SelectedStartupLanguage": "GB",
+    "TouchGfxPath": "../Middlewares/ST/touchgfx",
+    "UIPath": ".",
+    "AvailableColorDepths": [
+      16
+    ],
+    "AvailableLCDs": {
+      "16": "LCD16bpp"
+    },
+    "AvailableSections": [
+      "ExtFlashSection",
+      "IntFlashSection"
+    ],
+    "AvailableResolutions": [
+      {
+        "Width": 240,
+        "Height": 320
+      }
+    ],
+    "PhysicalButtons": [],
+    "FrameworkFeatures": {
+      "LCD16bpp": {
+        "Id": "LCD16bpp",
+        "IsEnabled": true
+      }
+    },
+    "GenerateAssetsCommand": "make -f simulator/gcc/Makefile assets -j8",
+    "PostGenerateCommand": "touchgfx update_project --project-file=simulator/msvs/Application.vcxproj",
+    "PostGenerateTargetCommand": "touchgfx update_project",
+    "CompileSimulatorCommand": "make -f simulator/gcc/Makefile -j8",
+    "RunSimulatorCommand": "build\\bin\\simulator.exe",
+    "CompileTargetCommandOverride": "make -f ../gcc/Makefile -j8",
+    "FlashTargetCommandOverride": "make -f ../gcc/Makefile flash",
+    "LandscapeSkinX": 0,
+    "LandscapeSkinY": 0,
+    "PortraitSkinX": 0,
+    "PortraitSkinY": 0,
+    "DisplayOrientation": "Portrait",
+    "Family": "STM32F4",
+    "SubFamily": "STM32F429/439",
+    "Toolchain": "STM32CubeIDE",
+    "Platform": "m4",
+    "ProjectFile": "../STM32F429I_DISCO_REV_D01.ioc",
+    "OptionalComponentsRoot": "../Middlewares/ST/touchgfx_components",
+    "OptionalComponents": [],
+    "AdditionalFeatures": [
+      "CWRVector",
+      "VectorFonts"
+    ]
+  },
+  "Version": "4.26.1",
+  "CreatedBy": "4.26.1"
+}

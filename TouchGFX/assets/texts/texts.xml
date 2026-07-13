@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextDatabase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="texts.xsd" Version="4.26.1">
+  <Languages>
+    <Language Id="GB" />
+  </Languages>
+  <Texts>
+    <TextGroup Id="Group1" />
+    <TextGroup Id="Unsorted">
+      <Text Id="__SingleUse_6VRD" Alignment="Left" TypographyId="Small">
+        <Translation Language="GB">0</Translation>
+      </Text>
+      <Text Id="__SingleUse_JIW5" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">Score: &lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_218J" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">0</Translation>
+      </Text>
+      <Text Id="__SingleUse_GGD8" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">High: &lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_HYMF" Alignment="Left" TypographyId="Small">
+        <Translation Language="GB">0</Translation>
+      </Text>
+      <Text Id="__SingleUse_23UU" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">Score: &lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_6L17" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">0</Translation>
+      </Text>
+      <Text Id="__SingleUse_ZJTO" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">High: &lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_8POJ" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">0</Translation>
+      </Text>
+      <Text Id="__SingleUse_ZSF2" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">High score: &lt;value&gt;</Translation>
+      </Text>
+      <Text Id="__SingleUse_M49V" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">0</Translation>
+      </Text>
+      <Text Id="__SingleUse_NFCM" Alignment="Left" TypographyId="Typography1">
+        <Translation Language="GB">Your score: &lt;value&gt;</Translation>
+      </Text>
+    </TextGroup>
+  </Texts>
+  <Typographies>
+    <Typography Id="Default" Font="verdana.ttf" Size="20" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
+    <Typography Id="Large" Font="verdana.ttf" Size="40" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
+    <Typography Id="Small" Font="verdana.ttf" Size="10" Bpp="4" IsVector="no" Direction="LTR" FallbackCharacter="?" />
+    <Typography Id="Typography1" Font="tahoma.ttf" Size="14" Bpp="4" IsVector="no" Direction="RTL" FallbackCharacter="?" WildcardCharacterRanges="0-9" />
+  </Typographies>
+</TextDatabase>
