@@ -72,6 +72,7 @@ private:
 
     // Boss fire pattern: 3 3 3 3 5 ...
     int bossFireCount;
+    uint32_t nextFireTick;
 
     // Đạn boss
     int16_t bBulletX[BOSS_BULLET_MAX];

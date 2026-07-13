@@ -4,6 +4,12 @@
 #include "audio_service.h"
 #include "main.h"
 
+
+extern "C" {
+    #include "stm32f4xx_hal.h"
+    extern RNG_HandleTypeDef hrng;
+}
+
 Screen2View::Screen2View()
     : isGameEnded(false),
       tickCounter(0),
@@ -240,37 +246,27 @@ void Screen2View::finishGame(bool isVictory)
 
 void Screen2View::spawnNextWave()
 {
-    /*
-     * Nếu muốn chơi đủ 3 wave rồi mới sang boss:
-     * wave 1 -> wave 2 -> wave 3 -> Screen3 boss
-     * thì điều kiện phải là waveLevel > WAVES_TO_BOSS.
-     */
-	if (waveLevel > WAVES_TO_BOSS)
-	{
-	    isGameEnded = true;
+    if (waveLevel > WAVES_TO_BOSS)
+    {
+        isGameEnded = true;
+        cleanupGameObjects();
+        presenter->saveGameResult(score, false);
+        static_cast<FrontendApplication*>(Application::getInstance())->gotoScreen3ScreenNoTransition();
+        return;
+    }
 
-	    cleanupGameObjects();
-
-	    presenter->saveGameResult(score, false);
-
-	    static_cast<FrontendApplication*>(Application::getInstance())->gotoScreen3ScreenNoTransition();
-	    return;
-	}
-
-    // Reset đạn người chơi khi sang wave mới
-    bulletActive = false;
+    //Thêm invalidate() trước và sau khi ẩn đạn người chơi và quái
     player_bullet.invalidate();
+    bulletActive = false;
     player_bullet.setVisible(false);
     player_bullet.invalidate();
 
-    // Reset đạn enemy khi sang wave mới
-    eBulletActive = false;
     enemy_bullet.invalidate();
+    eBulletActive = false;
     enemy_bullet.setVisible(false);
     enemy_bullet.invalidate();
 
     activeEnemiesCount = waveLevel * 4;
-
     if (activeEnemiesCount > NUM_ENEMIES_MAX)
     {
         activeEnemiesCount = NUM_ENEMIES_MAX;
@@ -279,11 +275,10 @@ void Screen2View::spawnNextWave()
     currentEnemySpeed = 1 + (waveLevel / 2);
     enemyDir = 1;
 
-    // Ẩn toàn bộ enemy cũ
+    //Thêm invalidate() khi ẩn quái cũ
     for (int i = 0; i < NUM_ENEMIES_MAX; i++)
     {
         enemyAlive[i] = false;
-
         if (enemyWidgets[i] != 0)
         {
             enemyWidgets[i]->invalidate();
@@ -292,8 +287,8 @@ void Screen2View::spawnNextWave()
         }
     }
 
-    static uint32_t seed = 123;
-    seed += tickCounter + waveLevel * 37;
+    static uint32_t fallbackSeed = 123;
+    fallbackSeed += tickCounter + waveLevel * 37;
 
     for (int i = 0; i < activeEnemiesCount; i++)
     {
@@ -305,25 +300,31 @@ void Screen2View::spawnNextWave()
         int baseX = 15 + col * (ENEMY_W + 20);
         int baseY = 20 + row * (ENEMY_H + 10);
 
-        seed = seed * 1103515245 + 12345;
-        int offsetX = ((seed >> 16) % 15) - 7;
+        // Dùng hàm chuẩn và check trạng thái HAL_OK
+        uint32_t trueRandom = 0;
+        int offsetX = 0;
+
+        if (HAL_RNG_GenerateRandomNumber(&hrng, &trueRandom) == HAL_OK)
+        {
+            offsetX = (trueRandom % 15) - 7;
+        }
+        else
+        {
+            // Fallback an toàn nếu RNG phần cứng đang bận hoặc lỗi
+            fallbackSeed = fallbackSeed * 1103515245 + 12345;
+            offsetX = ((fallbackSeed >> 16) % 15) - 7;
+        }
 
         enemyX[i] = baseX + offsetX;
 
-        if (enemyX[i] < 0)
-        {
-            enemyX[i] = 0;
-        }
-
-        if (enemyX[i] > SCREEN_W - ENEMY_W)
-        {
-            enemyX[i] = SCREEN_W - ENEMY_W;
-        }
+        if (enemyX[i] < 0) enemyX[i] = 0;
+        if (enemyX[i] > SCREEN_W - ENEMY_W) enemyX[i] = SCREEN_W - ENEMY_W;
 
         enemyY[i] = baseY;
 
         if (enemyWidgets[i] != 0)
         {
+            //Invalidate vị trí cũ, chuyển tới trí mới, hiện lên và invalidate lại
             enemyWidgets[i]->invalidate();
             enemyWidgets[i]->setXY(enemyX[i], enemyY[i]);
             enemyWidgets[i]->setVisible(true);

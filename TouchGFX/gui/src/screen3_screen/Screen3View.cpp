@@ -4,6 +4,12 @@
 #include "audio_service.h"
 #include "main.h"
 
+
+extern "C" {
+    #include "stm32f4xx_hal.h"
+    extern RNG_HandleTypeDef hrng;
+}
+
 Screen3View::Screen3View()
     : isGameEnded(false),
       tickCounter(0),
@@ -103,6 +109,8 @@ void Screen3View::resetGame()
     // ── Boss ──────────────────────────────────────────
     bossHP = BOSS_MAX_HP;
     bossFireCount = 0;
+
+    nextFireTick = 75;
 
     bossX = (SCREEN_W - BOSS_W) / 2;
     bossY = 10;
@@ -266,19 +274,32 @@ void Screen3View::fireBossBullets()
 
     bossFireCount++;
 
-    // Pattern: 3 3 3 3 5 3 3 3 3 5 ...
-    bool fireFive = (bossFireCount % 5 == 0);
+    //Lấy pattern xòe đạn an toàn
+    uint32_t rngPattern = 0;
+    bool fireFive = false;
+    if (HAL_RNG_GenerateRandomNumber(&hrng, &rngPattern) == HAL_OK)
+    {
+        fireFive = (rngPattern % 4 == 0); // 25% cơ hội bắn 5 viên
+    }
+
     int bulletCount = fireFive ? 5 : 3;
 
     int startX = bossX + (BOSS_W / 2) - (BULLET_W / 2);
     int startY = bossY + BOSS_H - 10;
 
+    //Tính góc lệch đạn
+    uint32_t rngSpread = 0;
+    int spreadSkew = 0;
+    if (HAL_RNG_GenerateRandomNumber(&hrng, &rngSpread) == HAL_OK)
+    {
+        spreadSkew = (rngSpread % 3) - 1; // Lệch trái, thẳng, hoặc phải
+    }
+
     if (bulletCount == 3)
     {
-        // 3 viên: trái, giữa, phải
-        bBulletDX[0] = -1;
-        bBulletDX[1] = 0;
-        bBulletDX[2] = 1;
+        bBulletDX[0] = -1 + spreadSkew;
+        bBulletDX[1] = 0  + spreadSkew;
+        bBulletDX[2] = 1  + spreadSkew;
 
         for (int i = 0; i < 3; i++)
         {
@@ -292,18 +313,20 @@ void Screen3View::fireBossBullets()
             bossBullets[i]->invalidate();
         }
 
-        // Ẩn viên 4, 5 nếu có
+        // Ẩn viên 4, 5
         for (int i = 3; i < BOSS_BULLET_MAX; i++)
         {
             bBulletActive[i] = false;
-            bossBullets[i]->invalidate();
-            bossBullets[i]->setVisible(false);
-            bossBullets[i]->invalidate();
+            if (bossBullets[i] != 0)
+            {
+                bossBullets[i]->invalidate();
+                bossBullets[i]->setVisible(false);
+                bossBullets[i]->invalidate();
+            }
         }
     }
     else
     {
-        // 5 viên: xòe rộng hơn
         bBulletDX[0] = -2;
         bBulletDX[1] = -1;
         bBulletDX[2] = 0;
@@ -326,9 +349,8 @@ void Screen3View::fireBossBullets()
 
 void Screen3View::bossLogic()
 {
-    // ── 1. Boss di chuyển ngang ───────────────────────
+    // ── 1. Boss di chuyển ngang ──
     boss.invalidate();
-
     bossX += bossDir * BOSS_SPEED;
 
     if (bossX <= 0)
@@ -345,14 +367,25 @@ void Screen3View::bossLogic()
     boss.setX(bossX);
     boss.invalidate();
 
-    // ── 2. Boss bắn mỗi 75 tick ───────────────────────
-    // Tăng từ 60 lên 75 để boss bắn thưa hơn.
-    if (tickCounter % 80 == 0)
+    // ── 2. Boss bắn ngẫu nhiên  ──
+
+    if (tickCounter >= nextFireTick)
     {
         fireBossBullets();
+
+        // Tính tick cho lần bắn tiếp theo
+        uint32_t rngTime = 0;
+        if (HAL_RNG_GenerateRandomNumber(&hrng, &rngTime) == HAL_OK)
+        {
+            nextFireTick = tickCounter + 50 + (rngTime % 61); // Cách nhau 50-110 tick
+        }
+        else
+        {
+            nextFireTick = tickCounter + 75; // Fallback an toàn
+        }
     }
 
-    // ── 3. Di chuyển đạn boss ─────────────────────────
+    // ── 3. Di chuyển đạn boss ──
     for (int i = 0; i < BOSS_BULLET_MAX; i++)
     {
         if (bBulletActive[i])
@@ -369,6 +402,7 @@ void Screen3View::bossLogic()
                 bBulletX[i] > SCREEN_W)
             {
                 bBulletActive[i] = false;
+                // Đảm bảo đạn trượt ra ngoài phải được ẩn sạch
                 bossBullets[i]->setVisible(false);
                 bossBullets[i]->invalidate();
             }
