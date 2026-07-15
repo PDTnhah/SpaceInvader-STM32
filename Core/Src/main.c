@@ -70,6 +70,7 @@ DMA2D_HandleTypeDef hdma2d;
 I2C_HandleTypeDef hi2c3;
 
 I2S_HandleTypeDef hi2s2;
+DMA_HandleTypeDef hdma_spi2_tx;
 
 LTDC_HandleTypeDef hltdc;
 
@@ -105,6 +106,7 @@ uint8_t isRevD = 0; /* Applicable only for STM32F429I DISCOVERY REVD and above *
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_CRC_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_SPI5_Init(void);
@@ -184,6 +186,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_CRC_Init();
   MX_I2C3_Init();
   MX_SPI5_Init();
@@ -590,6 +593,22 @@ static void MX_SPI5_Init(void)
     isRevD = 1;
   }
   /* USER CODE END SPI5_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
 
 }
 

@@ -20,8 +20,9 @@ static osMessageQueueId_t audioQueueHandle;
 static osThreadId_t audioThreadHandle;
 
 #define AUDIO_QUEUE_LENGTH  8U
-#define AUDIO_BLOCK_FRAMES  128U
 #define AUDIO_GAIN_SHIFT    1U
+
+static osSemaphoreId_t dmaSemaphore;
 
 static void AudioTask(void *argument);
 static void playClip(const int16_t *samples, uint32_t sampleCount);
@@ -65,6 +66,8 @@ void AudioService_Start(void)
     {
         return;
     }
+
+    dmaSemaphore = osSemaphoreNew(1, 0, NULL);
 
     audioThreadHandle = osThreadNew(AudioTask, NULL, &audioThreadAttributes);
 }
@@ -120,51 +123,53 @@ static void AudioTask(void *argument)
     }
 }
 
-static int16_t txBuffer[AUDIO_BLOCK_FRAMES * 2U];
+static int16_t txBuffer[3000];
+
+void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s)
+{
+    if (hi2s->Instance == SPI2)
+    {
+        osSemaphoreRelease(dmaSemaphore);
+    }
+}
 
 static void playClip(const int16_t *samples, uint32_t sampleCount)
 {
-    uint32_t index = 0U;
-
     /* Dừng nếu đang phát dở để tránh xung đột */
     HAL_I2S_DMAStop(&hi2s2);
 
-    /* Gửi 2 khung im lặng để đánh thức chip MAX98357A (Wake-up time) */
-    for (uint32_t i = 0; i < AUDIO_BLOCK_FRAMES * 2U; i++) {
-        txBuffer[i] = 0;
-    }
-    HAL_I2S_Transmit(&hi2s2, (uint16_t *)txBuffer, (uint16_t)(AUDIO_BLOCK_FRAMES * 2U), HAL_MAX_DELAY);
-    HAL_I2S_Transmit(&hi2s2, (uint16_t *)txBuffer, (uint16_t)(AUDIO_BLOCK_FRAMES * 2U), HAL_MAX_DELAY);
+    /* Xóa sạch cờ Semaphore nếu còn sót lại từ lần trước */
+    while(osSemaphoreAcquire(dmaSemaphore, 0) == osOK);
 
-    while (index < sampleCount)
+    uint32_t txIndex = 0;
+
+    /* Gửi 64 khung im lặng (128 samples) để đánh thức chip MAX98357A (Wake-up time) */
+    for (uint32_t i = 0; i < 64; i++) {
+        txBuffer[txIndex++] = 0;
+        txBuffer[txIndex++] = 0;
+    }
+
+    /* Giới hạn độ dài để không tràn txBuffer (tối đa chứa 1500 frames) */
+    if (sampleCount > 1400) {
+        sampleCount = 1400;
+    }
+
+    /* Mono → Stereo: chuyển toàn bộ file âm thanh vào txBuffer trong 1 lần */
+    for (uint32_t i = 0U; i < sampleCount; i++)
     {
-        uint32_t frameCount = sampleCount - index;
-        if (frameCount > AUDIO_BLOCK_FRAMES)
-        {
-            frameCount = AUDIO_BLOCK_FRAMES;
-        }
-
-        /* Mono → Stereo: nhân đôi mỗi sample sang L+R */
-        for (uint32_t i = 0U; i < frameCount; i++)
-        {
-            int32_t sample = (int32_t)samples[index + i] >> AUDIO_GAIN_SHIFT;
-            txBuffer[(i * 2U)]      = (int16_t)sample; /* Left  */
-            txBuffer[(i * 2U) + 1U] = (int16_t)sample; /* Right */
-        }
-
-        /* Blocking transmit — chạy trong thread riêng nên không chặn UI */
-        HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET); // Bật LED báo hiệu đang truyền I2S
-
-        if (HAL_I2S_Transmit(&hi2s2, (uint16_t *)txBuffer,
-                              (uint16_t)(frameCount * 2U), HAL_MAX_DELAY) != HAL_OK)
-        {
-            HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
-            break;
-        }
-
-        HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET); // Tắt LED
-
-
-        index += frameCount;
+        int32_t sample = (int32_t)samples[i] >> AUDIO_GAIN_SHIFT;
+        txBuffer[txIndex++] = (int16_t)sample; /* Left  */
+        txBuffer[txIndex++] = (int16_t)sample; /* Right */
     }
+
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET); // Bật LED báo hiệu đang truyền I2S
+
+    /* Gửi toàn bộ txBuffer bằng DMA trong 1 lệnh duy nhất */
+    if (HAL_I2S_Transmit_DMA(&hi2s2, (uint16_t *)txBuffer, (uint16_t)txIndex) == HAL_OK)
+    {
+        /* Ngủ (Block thread) chờ DMA báo truyền xong qua Callback */
+        osSemaphoreAcquire(dmaSemaphore, osWaitForever);
+    }
+
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET); // Tắt LED
 }
