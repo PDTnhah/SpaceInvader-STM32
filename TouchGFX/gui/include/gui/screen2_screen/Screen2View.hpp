@@ -46,6 +46,8 @@ private:
     int currentEnemySpeed;
     int activeEnemiesCount;
 
+    int nextEnemyFireTick;
+
     // Background
     int16_t bg11Y;
     int16_t bg12Y;
@@ -67,6 +69,7 @@ private:
     int16_t enemyX[NUM_ENEMIES_MAX];
     int16_t enemyY[NUM_ENEMIES_MAX];
     bool enemyAlive[NUM_ENEMIES_MAX];
+    bool enemyKamikaze[NUM_ENEMIES_MAX];
     int8_t enemyDir;
 
     touchgfx::Image* enemyWidgets[NUM_ENEMIES_MAX];

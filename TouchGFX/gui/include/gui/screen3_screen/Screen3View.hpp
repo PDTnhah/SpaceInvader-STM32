@@ -69,6 +69,8 @@ private:
     int16_t bossY;
     int8_t bossDir;
     int bossHP;
+    bool isEnraged;
+    int currentBossSpeed;
 
     // Boss fire pattern: 3 3 3 3 5 ...
     int bossFireCount;

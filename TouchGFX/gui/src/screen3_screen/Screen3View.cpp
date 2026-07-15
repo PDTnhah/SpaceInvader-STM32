@@ -115,6 +115,8 @@ void Screen3View::resetGame()
     bossX = (SCREEN_W - BOSS_W) / 2;
     bossY = 10;
     bossDir = 1;
+    isEnraged = false;
+    currentBossSpeed = BOSS_SPEED;
 
     boss.invalidate();
     boss.setXY(bossX, bossY);
@@ -277,7 +279,11 @@ void Screen3View::fireBossBullets()
     //Lấy pattern xòe đạn an toàn
     uint32_t rngPattern = 0;
     bool fireFive = false;
-    if (HAL_RNG_GenerateRandomNumber(&hrng, &rngPattern) == HAL_OK)
+    if (isEnraged)
+    {
+        fireFive = true;
+    }
+    else if (HAL_RNG_GenerateRandomNumber(&hrng, &rngPattern) == HAL_OK)
     {
         fireFive = (rngPattern % 4 == 0); // 25% cơ hội bắn 5 viên
     }
@@ -306,6 +312,15 @@ void Screen3View::fireBossBullets()
             bBulletActive[i] = true;
             bBulletX[i] = startX;
             bBulletY[i] = startY;
+
+            if (isEnraged)
+            {
+                uint32_t rngJitter = 0;
+                if (HAL_RNG_GenerateRandomNumber(&hrng, &rngJitter) == HAL_OK)
+                {
+                    bBulletDX[i] += ((rngJitter % 5) - 2); // Thêm rung lắc ngẫu nhiên
+                }
+            }
 
             bossBullets[i]->invalidate();
             bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
@@ -339,6 +354,15 @@ void Screen3View::fireBossBullets()
             bBulletX[i] = startX;
             bBulletY[i] = startY;
 
+            if (isEnraged)
+            {
+                uint32_t rngJitter = 0;
+                if (HAL_RNG_GenerateRandomNumber(&hrng, &rngJitter) == HAL_OK)
+                {
+                    bBulletDX[i] += ((rngJitter % 5) - 2); // Thêm rung lắc ngẫu nhiên
+                }
+            }
+
             bossBullets[i]->invalidate();
             bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
             bossBullets[i]->setVisible(true);
@@ -349,9 +373,15 @@ void Screen3View::fireBossBullets()
 
 void Screen3View::bossLogic()
 {
+    if (!isEnraged && bossHP <= BOSS_MAX_HP / 2)
+    {
+        isEnraged = true;
+        currentBossSpeed = 3; // Nhanh hơn
+    }
+
     // ── 1. Boss di chuyển ngang ──
     boss.invalidate();
-    bossX += bossDir * BOSS_SPEED;
+    bossX += bossDir * currentBossSpeed;
 
     if (bossX <= 0)
     {
@@ -377,11 +407,18 @@ void Screen3View::bossLogic()
         uint32_t rngTime = 0;
         if (HAL_RNG_GenerateRandomNumber(&hrng, &rngTime) == HAL_OK)
         {
-            nextFireTick = tickCounter + 50 + (rngTime % 61); // Cách nhau 50-110 tick
+            if (isEnraged)
+            {
+                nextFireTick = tickCounter + 20 + (rngTime % 30); // 20-50 tick
+            }
+            else
+            {
+                nextFireTick = tickCounter + 50 + (rngTime % 61); // Cách nhau 50-110 tick
+            }
         }
         else
         {
-            nextFireTick = tickCounter + 75; // Fallback an toàn
+            nextFireTick = tickCounter + (isEnraged ? 35 : 75); // Fallback an toàn
         }
     }
 

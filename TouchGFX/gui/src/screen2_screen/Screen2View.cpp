@@ -37,8 +37,10 @@ Screen2View::Screen2View()
         enemyX[i] = 0;
         enemyY[i] = 0;
         enemyAlive[i] = false;
+        enemyKamikaze[i] = false;
         enemyWidgets[i] = 0;
     }
+    nextEnemyFireTick = 50;
 }
 
 void Screen2View::setupScreen()
@@ -77,6 +79,7 @@ void Screen2View::resetGame()
     currentEnemySpeed = 2;
     activeEnemiesCount = 0;
     enemyDir = 1;
+    nextEnemyFireTick = 50;
 
     // ── Setup background bản nhẹ ──────────────────────
     bg11Y = 0;
@@ -127,6 +130,7 @@ void Screen2View::resetGame()
     for (int i = 0; i < NUM_ENEMIES_MAX; i++)
     {
         enemyAlive[i] = false;
+        enemyKamikaze[i] = false;
 
         if (enemyWidgets[i] != 0)
         {
@@ -279,6 +283,7 @@ void Screen2View::spawnNextWave()
     for (int i = 0; i < NUM_ENEMIES_MAX; i++)
     {
         enemyAlive[i] = false;
+        enemyKamikaze[i] = false;
         if (enemyWidgets[i] != 0)
         {
             enemyWidgets[i]->invalidate();
@@ -303,16 +308,19 @@ void Screen2View::spawnNextWave()
         // Dùng hàm chuẩn và check trạng thái HAL_OK
         uint32_t trueRandom = 0;
         int offsetX = 0;
+        int offsetY = 0;
 
         if (HAL_RNG_GenerateRandomNumber(&hrng, &trueRandom) == HAL_OK)
         {
             offsetX = (trueRandom % 15) - 7;
+            offsetY = ((trueRandom >> 8) % 11) - 5;
         }
         else
         {
             // Fallback an toàn nếu RNG phần cứng đang bận hoặc lỗi
             fallbackSeed = fallbackSeed * 1103515245 + 12345;
             offsetX = ((fallbackSeed >> 16) % 15) - 7;
+            offsetY = ((fallbackSeed >> 8) % 11) - 5;
         }
 
         enemyX[i] = baseX + offsetX;
@@ -320,7 +328,7 @@ void Screen2View::spawnNextWave()
         if (enemyX[i] < 0) enemyX[i] = 0;
         if (enemyX[i] > SCREEN_W - ENEMY_W) enemyX[i] = SCREEN_W - ENEMY_W;
 
-        enemyY[i] = baseY;
+        enemyY[i] = baseY + offsetY;
 
         if (enemyWidgets[i] != 0)
         {
@@ -351,6 +359,24 @@ bool Screen2View::checkHit(int eIndex)
 
 void Screen2View::moveEnemies()
 {
+    // Trigger kamikaze randomly (e.g. ~1% chance per move frame)
+    uint32_t rngKamikaze = 0;
+    if (HAL_RNG_GenerateRandomNumber(&hrng, &rngKamikaze) == HAL_OK)
+    {
+        if ((rngKamikaze % 100) == 0)
+        {
+            // Find a living, non-kamikaze enemy from the bottom row up
+            for (int i = activeEnemiesCount - 1; i >= 0; i--)
+            {
+                if (enemyAlive[i] && !enemyKamikaze[i])
+                {
+                    enemyKamikaze[i] = true;
+                    break;
+                }
+            }
+        }
+    }
+
     bool hitWall = false;
 
     // Check enemy chạm tường hoặc chạm player
@@ -358,7 +384,7 @@ void Screen2View::moveEnemies()
     {
         if (enemyAlive[i])
         {
-            if (enemyX[i] <= 0 || enemyX[i] >= SCREEN_W - ENEMY_W)
+            if (!enemyKamikaze[i] && (enemyX[i] <= 0 || enemyX[i] >= SCREEN_W - ENEMY_W))
             {
                 hitWall = true;
             }
@@ -383,7 +409,7 @@ void Screen2View::moveEnemies()
 
         for (int i = 0; i < activeEnemiesCount; i++)
         {
-            if (enemyAlive[i])
+            if (enemyAlive[i] && !enemyKamikaze[i])
             {
                 enemyY[i] += ENEMY_DROP;
 
@@ -403,20 +429,37 @@ void Screen2View::moveEnemies()
         {
             enemyWidgets[i]->invalidate();
 
-            enemyX[i] += enemyDir * currentEnemySpeed;
-
-            if (enemyX[i] < 0)
+            if (enemyKamikaze[i])
             {
-                enemyX[i] = 0;
+                // Kamikaze drop speed is BULLET_SPEED + 1 = 6
+                enemyY[i] += (BULLET_SPEED + 1);
+
+                if (enemyY[i] > SCREEN_H)
+                {
+                    enemyAlive[i] = false;
+                    enemyWidgets[i]->setVisible(false);
+                }
+            }
+            else
+            {
+                enemyX[i] += enemyDir * currentEnemySpeed;
+
+                if (enemyX[i] < 0)
+                {
+                    enemyX[i] = 0;
+                }
+
+                if (enemyX[i] > SCREEN_W - ENEMY_W)
+                {
+                    enemyX[i] = SCREEN_W - ENEMY_W;
+                }
             }
 
-            if (enemyX[i] > SCREEN_W - ENEMY_W)
+            if (enemyWidgets[i] != 0 && enemyAlive[i])
             {
-                enemyX[i] = SCREEN_W - ENEMY_W;
+                enemyWidgets[i]->setXY(enemyX[i], enemyY[i]);
+                enemyWidgets[i]->invalidate();
             }
-
-            enemyWidgets[i]->setXY(enemyX[i], enemyY[i]);
-            enemyWidgets[i]->invalidate();
         }
     }
 }
@@ -448,9 +491,24 @@ void Screen2View::enemyFireLogic()
             fireRate = 25;
         }
 
-        if (tickCounter % fireRate == 0)
+        if (tickCounter >= (uint32_t)nextEnemyFireTick)
         {
-            int shooter = aliveIdx[(tickCounter * 13) % count];
+            uint32_t rngShoot = 0;
+            int shooterIdx = 0;
+            if (HAL_RNG_GenerateRandomNumber(&hrng, &rngShoot) == HAL_OK)
+            {
+                shooterIdx = rngShoot % count;
+                int maxDelay = 100 - (waveLevel * 10);
+                if (maxDelay < 40) maxDelay = 40;
+                nextEnemyFireTick = tickCounter + 30 + ((rngShoot >> 16) % (maxDelay - 30));
+            }
+            else
+            {
+                shooterIdx = (tickCounter * 13) % count;
+                nextEnemyFireTick = tickCounter + fireRate;
+            }
+
+            int shooter = aliveIdx[shooterIdx];
 
             eBulletX = enemyX[shooter] + (ENEMY_W / 2) - (BULLET_W / 2);
             eBulletY = enemyY[shooter] + ENEMY_H;
@@ -686,6 +744,7 @@ void Screen2View::cleanupGameObjects()
     for (int i = 0; i < NUM_ENEMIES_MAX; i++)
     {
         enemyAlive[i] = false;
+        enemyKamikaze[i] = false;
 
         if (enemyWidgets[i] != 0)
         {
