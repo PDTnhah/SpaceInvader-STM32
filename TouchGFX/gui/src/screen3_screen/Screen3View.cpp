@@ -109,6 +109,9 @@ void Screen3View::resetGame()
     // ── Boss ──────────────────────────────────────────
     bossHP = BOSS_MAX_HP;
     bossFireCount = 0;
+    teleportCooldown = 0;
+    burstFireTimer = 0;
+    burstBulletCount = 0;
 
     nextFireTick = 75;
 
@@ -263,20 +266,50 @@ void Screen3View::finishGame(bool isVictory)
     static_cast<FrontendApplication*>(Application::getInstance())->gotoScreen4ScreenNoTransition();
 }
 
-void Screen3View::fireBossBullets()
+void Screen3View::fireBossBullets(bool isBurst)
 {
-    // Không bắn loạt mới nếu còn viên nào đang bay
+    // Đếm số lượng đạn đang bay
+    int activeCount = 0;
     for (int i = 0; i < BOSS_BULLET_MAX; i++)
     {
-        if (bBulletActive[i])
-        {
-            return;
-        }
+        if (bBulletActive[i]) activeCount++;
     }
+
+    if (activeCount == BOSS_BULLET_MAX) return;
 
     bossFireCount++;
 
-    //Lấy pattern xòe đạn an toàn
+    int startX = bossX + (BOSS_W / 2) - (BULLET_W / 2);
+    int startY = bossY + BOSS_H - 10;
+
+    if (isBurst)
+    {
+        // Bắn 1 viên thẳng cực nhanh
+        for (int i = 0; i < BOSS_BULLET_MAX; i++)
+        {
+            if (!bBulletActive[i])
+            {
+                bBulletActive[i] = true;
+                bBulletX[i] = startX;
+                bBulletY[i] = startY;
+                bBulletDX[i] = 0;
+                bBulletDY[i] = B_BULLET_SPEED + 4; // Rất nhanh
+                
+                if (bossBullets[i] != 0) {
+                    bossBullets[i]->invalidate();
+                    bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
+                    bossBullets[i]->setVisible(true);
+                    bossBullets[i]->invalidate();
+                }
+                break;
+            }
+        }
+        return;
+    }
+
+    // Không đủ slot để bắn chùm thì đợi
+    if (BOSS_BULLET_MAX - activeCount < 3) return;
+
     uint32_t rngPattern = 0;
     bool fireFive = false;
     if (isEnraged)
@@ -290,10 +323,11 @@ void Screen3View::fireBossBullets()
 
     int bulletCount = fireFive ? 5 : 3;
 
-    int startX = bossX + (BOSS_W / 2) - (BULLET_W / 2);
-    int startY = bossY + BOSS_H - 10;
+    // Nếu không đủ slot cho 5 viên thì giảm xuống 3
+    if (BOSS_BULLET_MAX - activeCount < bulletCount) {
+        bulletCount = 3;
+    }
 
-    //Tính góc lệch đạn
     uint32_t rngSpread = 0;
     int spreadSkew = 0;
     if (HAL_RNG_GenerateRandomNumber(&hrng, &rngSpread) == HAL_OK)
@@ -301,72 +335,51 @@ void Screen3View::fireBossBullets()
         spreadSkew = (rngSpread % 3) - 1; // Lệch trái, thẳng, hoặc phải
     }
 
+    int dxArray[5];
     if (bulletCount == 3)
     {
-        bBulletDX[0] = -1 + spreadSkew;
-        bBulletDX[1] = 0  + spreadSkew;
-        bBulletDX[2] = 1  + spreadSkew;
-
-        for (int i = 0; i < 3; i++)
-        {
-            bBulletActive[i] = true;
-            bBulletX[i] = startX;
-            bBulletY[i] = startY;
-
-            if (isEnraged)
-            {
-                uint32_t rngJitter = 0;
-                if (HAL_RNG_GenerateRandomNumber(&hrng, &rngJitter) == HAL_OK)
-                {
-                    bBulletDX[i] += ((rngJitter % 5) - 2); // Thêm rung lắc ngẫu nhiên
-                }
-            }
-
-            bossBullets[i]->invalidate();
-            bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
-            bossBullets[i]->setVisible(true);
-            bossBullets[i]->invalidate();
-        }
-
-        // Ẩn viên 4, 5
-        for (int i = 3; i < BOSS_BULLET_MAX; i++)
-        {
-            bBulletActive[i] = false;
-            if (bossBullets[i] != 0)
-            {
-                bossBullets[i]->invalidate();
-                bossBullets[i]->setVisible(false);
-                bossBullets[i]->invalidate();
-            }
-        }
+        dxArray[0] = -2 + spreadSkew;
+        dxArray[1] = 0  + spreadSkew;
+        dxArray[2] = 2  + spreadSkew;
     }
     else
     {
-        bBulletDX[0] = -2;
-        bBulletDX[1] = -1;
-        bBulletDX[2] = 0;
-        bBulletDX[3] = 1;
-        bBulletDX[4] = 2;
+        dxArray[0] = -4;
+        dxArray[1] = -2;
+        dxArray[2] = 0;
+        dxArray[3] = 2;
+        dxArray[4] = 4;
+    }
 
-        for (int i = 0; i < BOSS_BULLET_MAX; i++)
+    int fired = 0;
+    for (int i = 0; i < BOSS_BULLET_MAX && fired < bulletCount; i++)
+    {
+        if (!bBulletActive[i])
         {
             bBulletActive[i] = true;
             bBulletX[i] = startX;
             bBulletY[i] = startY;
-
+            bBulletDX[i] = dxArray[fired];
+            
+            bBulletDY[i] = B_BULLET_SPEED;
             if (isEnraged)
             {
+                bBulletDY[i] = 2; // Tốc độ cơ bản tăng lên 2 khi Enraged
                 uint32_t rngJitter = 0;
                 if (HAL_RNG_GenerateRandomNumber(&hrng, &rngJitter) == HAL_OK)
                 {
-                    bBulletDX[i] += ((rngJitter % 5) - 2); // Thêm rung lắc ngẫu nhiên
+                    bBulletDY[i] += (rngJitter % 3); // DY có thể lên 2, 3, hoặc 4
                 }
             }
 
-            bossBullets[i]->invalidate();
-            bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
-            bossBullets[i]->setVisible(true);
-            bossBullets[i]->invalidate();
+            if (bossBullets[i] != 0) {
+                bossBullets[i]->invalidate();
+                bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
+                bossBullets[i]->setVisible(true);
+                bossBullets[i]->invalidate();
+            }
+            
+            fired++;
         }
     }
 }
@@ -377,6 +390,40 @@ void Screen3View::bossLogic()
     {
         isEnraged = true;
         currentBossSpeed = 3; // Nhanh hơn
+    }
+
+    // ── Burst Fire Logic ──
+    if (burstFireTimer > 0)
+    {
+        burstFireTimer--;
+        if (burstFireTimer == 0)
+        {
+            fireBossBullets(true);
+        }
+    }
+
+    // ── Boss Teleport Logic ──
+    if (isEnraged)
+    {
+        if (teleportCooldown > 0)
+        {
+            teleportCooldown--;
+        }
+        else
+        {
+            uint32_t rngTeleport = 0;
+            if (HAL_RNG_GenerateRandomNumber(&hrng, &rngTeleport) == HAL_OK)
+            {
+                if (rngTeleport % 100 < 3) // 3% cơ hội teleport mỗi tick khi hồi chiêu xong
+                {
+                    boss.invalidate();
+                    bossX = rngTeleport % (SCREEN_W - BOSS_W);
+                    boss.setX(bossX);
+                    boss.invalidate();
+                    teleportCooldown = 120; // Chờ 2 giây
+                }
+            }
+        }
     }
 
     // ── 1. Boss di chuyển ngang ──
@@ -409,7 +456,11 @@ void Screen3View::bossLogic()
         {
             if (isEnraged)
             {
-                nextFireTick = tickCounter + 20 + (rngTime % 30); // 20-50 tick
+                nextFireTick = tickCounter + 30 + (rngTime % 30); // 30-60 tick
+                if (((rngTime >> 16) % 2) == 0) // 50% cơ hội bắn bồi
+                {
+                    burstFireTimer = 15;
+                }
             }
             else
             {
@@ -427,12 +478,22 @@ void Screen3View::bossLogic()
     {
         if (bBulletActive[i])
         {
-            bossBullets[i]->invalidate();
+            if (bossBullets[i] != 0) bossBullets[i]->invalidate();
 
-            bBulletY[i] += B_BULLET_SPEED;
+            // Sóng Zic-zac cho đạn boss khi Enraged
+            if (isEnraged && (tickCounter % 10 == 0)) {
+                uint32_t rngWavy = 0;
+                if (HAL_RNG_GenerateRandomNumber(&hrng, &rngWavy) == HAL_OK) {
+                    bBulletDX[i] += ((rngWavy % 3) - 1);
+                    if (bBulletDX[i] > 5) bBulletDX[i] = 5;
+                    if (bBulletDX[i] < -5) bBulletDX[i] = -5;
+                }
+            }
+
+            bBulletY[i] += bBulletDY[i];
             bBulletX[i] += bBulletDX[i];
 
-            bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
+            if (bossBullets[i] != 0) bossBullets[i]->setXY(bBulletX[i], bBulletY[i]);
 
             if (bBulletY[i] > SCREEN_H ||
                 bBulletX[i] < -BULLET_W ||
@@ -440,8 +501,10 @@ void Screen3View::bossLogic()
             {
                 bBulletActive[i] = false;
                 // Đảm bảo đạn trượt ra ngoài phải được ẩn sạch
-                bossBullets[i]->setVisible(false);
-                bossBullets[i]->invalidate();
+                if (bossBullets[i] != 0) {
+                    bossBullets[i]->setVisible(false);
+                    bossBullets[i]->invalidate();
+                }
             }
             else
             {
@@ -457,7 +520,7 @@ void Screen3View::bossLogic()
                     return;
                 }
 
-                bossBullets[i]->invalidate();
+                if (bossBullets[i] != 0) bossBullets[i]->invalidate();
             }
         }
     }

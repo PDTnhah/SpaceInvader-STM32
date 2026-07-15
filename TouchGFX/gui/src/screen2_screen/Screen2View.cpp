@@ -312,8 +312,8 @@ void Screen2View::spawnNextWave()
 
         if (HAL_RNG_GenerateRandomNumber(&hrng, &trueRandom) == HAL_OK)
         {
-            offsetX = (trueRandom % 15) - 7;
-            offsetY = ((trueRandom >> 8) % 11) - 5;
+            offsetX = (trueRandom % 21) - 10;
+            offsetY = (trueRandom % 17) - 8;
         }
         else
         {
@@ -371,6 +371,13 @@ void Screen2View::moveEnemies()
                 if (enemyAlive[i] && !enemyKamikaze[i])
                 {
                     enemyKamikaze[i] = true;
+                    
+                    // Tốc độ lượn lách ngang ban đầu
+                    enemyKamikazeDX[i] = ((rngKamikaze >> 8) % 5) - 2; 
+                    
+                    // Tốc độ rơi: từ chậm (2) đến mức tối đa (BULLET_SPEED)
+                    enemyKamikazeDY[i] = 2 + ((rngKamikaze >> 16) % (BULLET_SPEED - 1));
+                    
                     break;
                 }
             }
@@ -431,8 +438,23 @@ void Screen2View::moveEnemies()
 
             if (enemyKamikaze[i])
             {
-                // Kamikaze drop speed is BULLET_SPEED + 1 = 6
-                enemyY[i] += (BULLET_SPEED + 1);
+                // Lượn lách Zic-zac (đổi hướng khi chạm tường)
+                if (enemyX[i] <= 0 || enemyX[i] >= SCREEN_W - ENEMY_W) {
+                    enemyKamikazeDX[i] = -enemyKamikazeDX[i];
+                }
+
+                // Thi thoảng đổi hướng ngẫu nhiên để lượn lách
+                if ((tickCounter % 15) == 0) {
+                    uint32_t rngWobble = 0;
+                    if (HAL_RNG_GenerateRandomNumber(&hrng, &rngWobble) == HAL_OK) {
+                        enemyKamikazeDX[i] += ((rngWobble % 3) - 1);
+                        if (enemyKamikazeDX[i] > 3) enemyKamikazeDX[i] = 3;
+                        if (enemyKamikazeDX[i] < -3) enemyKamikazeDX[i] = -3;
+                    }
+                }
+
+                enemyX[i] += enemyKamikazeDX[i];
+                enemyY[i] += enemyKamikazeDY[i];
 
                 if (enemyY[i] > SCREEN_H)
                 {

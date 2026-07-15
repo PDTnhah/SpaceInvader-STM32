@@ -50,6 +50,16 @@ void AudioService_Init(void)
  * ------------------------------------------------------------ */
 void AudioService_Start(void)
 {
+    /* Init Debug LED (PG13 - Green LED on STM32F429I-DISCO) */
+    __HAL_RCC_GPIOG_CLK_ENABLE();
+    GPIO_InitTypeDef GPIO_InitStruct = {0};
+    GPIO_InitStruct.Pin = GPIO_PIN_13;
+    GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+    HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+    HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
+
     audioQueueHandle = osMessageQueueNew(AUDIO_QUEUE_LENGTH, sizeof(AudioRequest), NULL);
     if (audioQueueHandle == NULL)
     {
@@ -143,11 +153,17 @@ static void playClip(const int16_t *samples, uint32_t sampleCount)
         }
 
         /* Blocking transmit — chạy trong thread riêng nên không chặn UI */
+        HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_SET); // Bật LED báo hiệu đang truyền I2S
+
         if (HAL_I2S_Transmit(&hi2s2, (uint16_t *)txBuffer,
                               (uint16_t)(frameCount * 2U), HAL_MAX_DELAY) != HAL_OK)
         {
+            HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET);
             break;
         }
+
+        HAL_GPIO_WritePin(GPIOG, GPIO_PIN_13, GPIO_PIN_RESET); // Tắt LED
+
 
         index += frameCount;
     }

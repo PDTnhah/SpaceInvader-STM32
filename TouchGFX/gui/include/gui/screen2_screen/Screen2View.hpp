@@ -70,6 +70,8 @@ private:
     int16_t enemyY[NUM_ENEMIES_MAX];
     bool enemyAlive[NUM_ENEMIES_MAX];
     bool enemyKamikaze[NUM_ENEMIES_MAX];
+    int16_t enemyKamikazeDX[NUM_ENEMIES_MAX];
+    int16_t enemyKamikazeDY[NUM_ENEMIES_MAX];
     int8_t enemyDir;
 
     touchgfx::Image* enemyWidgets[NUM_ENEMIES_MAX];
