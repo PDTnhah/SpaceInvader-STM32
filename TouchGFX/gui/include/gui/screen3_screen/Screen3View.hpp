@@ -17,19 +17,17 @@
 #define BOSS_H          80
 #define BOSS_SPEED      1
 
-// Test flow: để thấp cho dễ qua boss.
-// Sau này có thể tăng lại 30 hoặc 50.
-#define BOSS_MAX_HP     10
+//tăng lên 50 để cân bằng game.
+#define BOSS_MAX_HP     50
 
 #define BULLET_W        16
 #define BULLET_H        16
 #define BULLET_SPEED    5
 
-// Giảm tốc độ đạn boss. Trước là 4, giờ giảm còn 2.
 #define B_BULLET_SPEED  1
 
-// Boss có tối đa 5 viên đạn
-#define BOSS_BULLET_MAX 5
+// Boss có tối đa 10 viên đạn
+#define BOSS_BULLET_MAX 10
 // ──────────────────────────────────────────────────────
 
 class Screen3View : public Screen3ViewBase
@@ -69,14 +67,20 @@ private:
     int16_t bossY;
     int8_t bossDir;
     int bossHP;
+    bool isEnraged;
+    int currentBossSpeed;
+    int teleportCooldown;
+    int burstFireTimer;
+    int burstBulletCount;
 
-    // Boss fire pattern: 3 3 3 3 5 ...
     int bossFireCount;
+    uint32_t nextFireTick;
 
     // Đạn boss
     int16_t bBulletX[BOSS_BULLET_MAX];
     int16_t bBulletY[BOSS_BULLET_MAX];
     int16_t bBulletDX[BOSS_BULLET_MAX];
+    int16_t bBulletDY[BOSS_BULLET_MAX];
     bool bBulletActive[BOSS_BULLET_MAX];
 
     touchgfx::Image* bossBullets[BOSS_BULLET_MAX];
@@ -89,7 +93,7 @@ private:
     void updateScoreText();
     void updateMovementInput();
     void bossLogic();
-    void fireBossBullets();
+    void fireBossBullets(bool isBurst = false);
     void cleanupGameObjects();
     void finishGame(bool isVictory);
 };
