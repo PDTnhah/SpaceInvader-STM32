@@ -68,6 +68,7 @@ private:
     // Enemy
     int16_t enemyX[NUM_ENEMIES_MAX];
     int16_t enemyY[NUM_ENEMIES_MAX];
+    int enemyHP[NUM_ENEMIES_MAX]; // <-- Elite Enemy HP
     bool enemyAlive[NUM_ENEMIES_MAX];
     bool enemyKamikaze[NUM_ENEMIES_MAX];
     int16_t enemyKamikazeDX[NUM_ENEMIES_MAX];

@@ -130,6 +130,7 @@ void Screen2View::resetGame()
     for (int i = 0; i < NUM_ENEMIES_MAX; i++)
     {
         enemyAlive[i] = false;
+        enemyHP[i] = 0;
         enemyKamikaze[i] = false;
 
         if (enemyWidgets[i] != 0)
@@ -283,6 +284,7 @@ void Screen2View::spawnNextWave()
     for (int i = 0; i < NUM_ENEMIES_MAX; i++)
     {
         enemyAlive[i] = false;
+        enemyHP[i] = 0;
         enemyKamikaze[i] = false;
         if (enemyWidgets[i] != 0)
         {
@@ -295,15 +297,35 @@ void Screen2View::spawnNextWave()
     static uint32_t fallbackSeed = 123;
     fallbackSeed += tickCounter + waveLevel * 37;
 
+    uint32_t rngMeta = 0;
+    if (HAL_RNG_GenerateRandomNumber(&hrng, &rngMeta) != HAL_OK)
+    {
+        rngMeta = fallbackSeed;
+    }
+    int formation = rngMeta % 3;
+    int numElites = 1 + ((rngMeta >> 4) % 2);
+    int elite1 = (rngMeta >> 8) % activeEnemiesCount;
+    int elite2 = (rngMeta >> 12) % activeEnemiesCount;
+
     for (int i = 0; i < activeEnemiesCount; i++)
     {
         enemyAlive[i] = true;
+        enemyHP[i] = (i == elite1 || (numElites == 2 && i == elite2)) ? 3 : 1;
 
         int row = i / 4;
         int col = i % 4;
 
         int baseX = 15 + col * (ENEMY_W + 20);
         int baseY = 20 + row * (ENEMY_H + 10);
+
+        if (formation == 1) // V-Shape
+        {
+            baseY += (col == 0 || col == 3) ? 0 : 30;
+        }
+        else if (formation == 2) // Triangle-Shape
+        {
+            baseY += (col == 1 || col == 2) ? 0 : 30;
+        }
 
         // Dùng hàm chuẩn và check trạng thái HAL_OK
         uint32_t trueRandom = 0;
@@ -335,6 +357,7 @@ void Screen2View::spawnNextWave()
             //Invalidate vị trí cũ, chuyển tới trí mới, hiện lên và invalidate lại
             enemyWidgets[i]->invalidate();
             enemyWidgets[i]->setXY(enemyX[i], enemyY[i]);
+            enemyWidgets[i]->setAlpha(255); // Reset alpha
             enemyWidgets[i]->setVisible(true);
             enemyWidgets[i]->invalidate();
         }
@@ -708,19 +731,34 @@ void Screen2View::handleTickEvent()
     {
         if (checkHit(i))
         {
-            enemyAlive[i] = false;
+            enemyHP[i] -= 1;
             AudioService_PlayHit();
-
-            enemyWidgets[i]->invalidate();
-            enemyWidgets[i]->setVisible(false);
-            enemyWidgets[i]->invalidate();
 
             bulletActive = false;
             player_bullet.invalidate();
             player_bullet.setVisible(false);
             player_bullet.invalidate();
 
-            score += 10;
+            if (enemyHP[i] <= 0)
+            {
+                enemyAlive[i] = false;
+                enemyWidgets[i]->invalidate();
+                enemyWidgets[i]->setVisible(false);
+                enemyWidgets[i]->invalidate();
+                score += 10; // Điểm khi giết
+            }
+            else
+            {
+                // Bị thương nhưng chưa chết (Lính Tinh Nhuệ)
+                enemyWidgets[i]->invalidate();
+                if (enemyHP[i] == 2) {
+                    enemyWidgets[i]->setAlpha(180);
+                } else if (enemyHP[i] == 1) {
+                    enemyWidgets[i]->setAlpha(90);
+                }
+                enemyWidgets[i]->invalidate();
+                score += 10; // Điểm bonus khi bắn trúng
+            }
 
             updateScoreText();
             updateHighScoreText();
