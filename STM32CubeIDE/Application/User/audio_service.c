@@ -79,24 +79,24 @@ static void AudioTask(void *argument)
         switch (request)
         {
             case AUDIO_REQUEST_LASER:
-                // Tiếng Laser: Chuỗi bíp cực ngắn liên tiếp tạo cảm giác "Pew!" (8-bit)
-                for (int i = 0; i < 3; i++)
+                // Tiếng Laser (Pew!): Băm xung (chớp tắt) với thời gian bật GIẢM DẦN.
+                for (int i = 5; i > 0; i--)
                 {
                     HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_ACTIVE_STATE);
-                    osDelay(5); // Kêu 5ms
+                    osDelay(i * 2); // Kêu: 10ms, 8ms, 6ms, 4ms, 2ms (ngắn dần)
                     HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_IDLE_STATE);
-                    osDelay(15); // Tắt 15ms
+                    osDelay(2);     // Nghỉ: 2msS
                 }
                 break;
 
             case AUDIO_REQUEST_HIT:
-                // Tiếng nổ (Explosion): Các nhịp bíp dài ngắn ngẫu nhiên tạo cảm giác nhiễu loạn (crackle)
-                for (int i = 0; i < 5; i++)
+                // Tiếng nổ (Explosion): Các nhịp bíp hỗn loạn, giật cục để tạo tiếng vỡ (crackle)
+                for (int i = 0; i < 6; i++)
                 {
                     HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_ACTIVE_STATE);
-                    osDelay(5 + (i * 5)); // Chiều dài bíp tăng dần 5, 10, 15, 20...
+                    osDelay((i % 2 == 0) ? 12 : 3); // Xen kẽ bíp dài 12ms và bíp cực ngắn 3ms
                     HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_IDLE_STATE);
-                    osDelay(10);
+                    osDelay((i % 3 == 0) ? 5 : 15); // Thời gian nghỉ cũng lệch nhịp
                 }
                 break;
 
