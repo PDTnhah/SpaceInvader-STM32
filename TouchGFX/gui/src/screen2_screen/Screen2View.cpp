@@ -543,9 +543,9 @@ void Screen2View::enemyFireLogic()
             if (HAL_RNG_GenerateRandomNumber(&hrng, &rngShoot) == HAL_OK)
             {
                 shooterIdx = rngShoot % count;
-                int maxDelay = 100 - (waveLevel * 10);
-                if (maxDelay < 40) maxDelay = 40;
-                nextEnemyFireTick = tickCounter + 30 + ((rngShoot >> 16) % (maxDelay - 30));
+                int maxDelay = 120 - (waveLevel * 10);
+                if (maxDelay < 60) maxDelay = 60;
+                nextEnemyFireTick = tickCounter + 50 + ((rngShoot >> 16) % (maxDelay - 50));
             }
             else
             {
@@ -697,7 +697,7 @@ void Screen2View::handleTickEvent()
     {
         enemy_bullet.invalidate();
 
-        eBulletY += BULLET_SPEED - 1;
+        eBulletY += BULLET_SPEED - 2;
         enemy_bullet.setY(eBulletY);
 
         if (eBulletY > SCREEN_H)
