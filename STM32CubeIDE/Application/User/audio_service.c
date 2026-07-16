@@ -65,10 +65,7 @@ static void AudioTask(void *argument)
 #define BUZZER_PORT GPIOC
 #define BUZZER_PIN  GPIO_PIN_2
 
-    /* 
-     * Nếu còi của bạn là loại "Active Low" (tức là cắm điện mức thấp mới kêu, mức cao lại tắt), 
-     * hãy đổi BUZZER_ACTIVE_STATE thành GPIO_PIN_RESET và BUZZER_IDLE_STATE thành GPIO_PIN_SET
-     */
+
 #define BUZZER_ACTIVE_STATE GPIO_PIN_SET 
 #define BUZZER_IDLE_STATE   GPIO_PIN_RESET
 
@@ -82,20 +79,25 @@ static void AudioTask(void *argument)
         switch (request)
         {
             case AUDIO_REQUEST_LASER:
-                for (int i = 0; i < 2; i++)
+                // Tiếng Laser: Chuỗi bíp cực ngắn liên tiếp tạo cảm giác "Pew!" (8-bit)
+                for (int i = 0; i < 3; i++)
                 {
                     HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_ACTIVE_STATE);
-                    osDelay(30);
+                    osDelay(5); // Kêu 5ms
                     HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_IDLE_STATE);
-                    osDelay(30);
+                    osDelay(15); // Tắt 15ms
                 }
                 break;
 
             case AUDIO_REQUEST_HIT:
-                HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_ACTIVE_STATE);
-                osDelay(150);
-                HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_IDLE_STATE);
-                osDelay(50);
+                // Tiếng nổ (Explosion): Các nhịp bíp dài ngắn ngẫu nhiên tạo cảm giác nhiễu loạn (crackle)
+                for (int i = 0; i < 5; i++)
+                {
+                    HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_ACTIVE_STATE);
+                    osDelay(5 + (i * 5)); // Chiều dài bíp tăng dần 5, 10, 15, 20...
+                    HAL_GPIO_WritePin(BUZZER_PORT, BUZZER_PIN, BUZZER_IDLE_STATE);
+                    osDelay(10);
+                }
                 break;
 
             default:
