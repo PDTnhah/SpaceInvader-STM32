@@ -312,7 +312,7 @@ void Screen3View::fireBossBullets(bool isBurst)
                 bBulletX[i] = startX;
                 bBulletY[i] = startY;
                 bBulletDX[i] = 0;
-                bBulletDY[i] = B_BULLET_SPEED + 4; // Rất nhanh
+                bBulletDY[i] = B_BULLET_SPEED + 1; // Giảm tốc độ burst fire xuống
                 
                 if (bossBullets[i] != 0) {
                     bossBullets[i]->invalidate();
@@ -387,7 +387,7 @@ void Screen3View::fireBossBullets(bool isBurst)
                 uint32_t rngJitter = 0;
                 if (HAL_RNG_GenerateRandomNumber(&hrng, &rngJitter) == HAL_OK)
                 {
-                    bBulletDY[i] += (rngJitter % 3); // DY có thể lên 2, 3, hoặc 4
+                    bBulletDY[i] += (rngJitter % 2); // DY chỉ có thể lên 2 hoặc 3
                 }
             }
 
@@ -433,13 +433,13 @@ void Screen3View::bossLogic()
             uint32_t rngTeleport = 0;
             if (HAL_RNG_GenerateRandomNumber(&hrng, &rngTeleport) == HAL_OK)
             {
-                if (rngTeleport % 100 < 5) // 5% cơ hội teleport mỗi tick khi hồi chiêu xong
+                if (rngTeleport % 100 < 20) // 20% cơ hội teleport mỗi tick khi hồi chiêu xong (tăng mạnh để dễ demo)
                 {
                     boss.invalidate();
                     bossX = rngTeleport % (SCREEN_W - BOSS_W);
                     boss.setX(bossX);
                     boss.invalidate();
-                    teleportCooldown = 120; // Chờ 2 giây
+                    teleportCooldown = 60; // Chờ 1 giây
                 }
             }
         }
@@ -476,7 +476,7 @@ void Screen3View::bossLogic()
             if (isEnraged)
             {
                 nextFireTick = tickCounter + 30 + (rngTime % 30); // 30-60 tick
-                if (((rngTime >> 16) % 2) == 0) // 50% cơ hội bắn bồi
+                if (((rngTime >> 16) % 100) < 15) // Giảm xuống chỉ còn 15% cơ hội bắn bồi (Burst fire)
                 {
                     burstFireTimer = 15;
                 }
