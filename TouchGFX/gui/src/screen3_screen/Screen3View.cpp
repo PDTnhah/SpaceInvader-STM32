@@ -42,13 +42,16 @@ void Screen3View::setupScreen()
 {
     Screen3ViewBase::setupScreen();
 
-    // Trong TouchGFX Designer cần có:
-    // bossBullet1, bossBullet2, bossBullet3, bossBullet4, bossBullet5
     bossBullets[0] = &bossBullet1;
     bossBullets[1] = &bossBullet2;
     bossBullets[2] = &bossBullet3;
     bossBullets[3] = &bossBullet4;
     bossBullets[4] = &bossBullet5;
+    bossBullets[5] = &bossBullet6;
+    bossBullets[6] = &bossBullet7;
+    bossBullets[7] = &bossBullet8;
+    bossBullets[8] = &bossBullet9;
+    bossBullets[9] = &bossBullet10;
 
     resetGame();
 }
@@ -414,7 +417,7 @@ void Screen3View::bossLogic()
             uint32_t rngTeleport = 0;
             if (HAL_RNG_GenerateRandomNumber(&hrng, &rngTeleport) == HAL_OK)
             {
-                if (rngTeleport % 100 < 3) // 3% cơ hội teleport mỗi tick khi hồi chiêu xong
+                if (rngTeleport % 100 < 5) // 5% cơ hội teleport mỗi tick khi hồi chiêu xong
                 {
                     boss.invalidate();
                     bossX = rngTeleport % (SCREEN_W - BOSS_W);

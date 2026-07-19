@@ -605,7 +605,7 @@ void Screen2View::handleTickEvent()
 
     tickCounter++;
 
-    // Bật lại dòng này để nền cuộn nhẹ.
+
     updateBackground();
     updateMovementInput();
 
