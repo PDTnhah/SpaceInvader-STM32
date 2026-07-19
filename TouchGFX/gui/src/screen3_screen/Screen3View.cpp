@@ -408,7 +408,7 @@ void Screen3View::bossLogic()
     if (!isEnraged && bossHP <= BOSS_MAX_HP / 2)
     {
         isEnraged = true;
-        currentBossSpeed = 3; // Nhanh hơn
+        currentBossSpeed = 2; // Nhanh hơn bình thường nhưng không quá nhanh (trước là 3)
     }
 
     // ── Burst Fire Logic ──
@@ -475,20 +475,20 @@ void Screen3View::bossLogic()
         {
             if (isEnraged)
             {
-                nextFireTick = tickCounter + 30 + (rngTime % 30); // 30-60 tick
-                if (((rngTime >> 16) % 100) < 15) // Giảm xuống chỉ còn 15% cơ hội bắn bồi (Burst fire)
+                nextFireTick = tickCounter + 120 + (rngTime % 60); // Cách nhau 120-180 tick (2-3 giây)
+                if (((rngTime >> 16) % 100) < 5) // Giữ nguyên 5% cơ hội bắn bồi
                 {
                     burstFireTimer = 15;
                 }
             }
             else
             {
-                nextFireTick = tickCounter + 50 + (rngTime % 61); // Cách nhau 50-110 tick
+                nextFireTick = tickCounter + 180 + (rngTime % 60); // Cách nhau 180-240 tick (3-4 giây)
             }
         }
         else
         {
-            nextFireTick = tickCounter + (isEnraged ? 35 : 75); // Fallback an toàn
+            nextFireTick = tickCounter + (isEnraged ? 150 : 200); // Fallback an toàn
         }
     }
 

@@ -17,8 +17,8 @@
 #define BOSS_H          80
 #define BOSS_SPEED      1
 
-//tăng lên 50 để cân bằng game.
-#define BOSS_MAX_HP     50
+//giảm xuống 30 để dễ demo
+#define BOSS_MAX_HP     30
 
 #define BULLET_W        16
 #define BULLET_H        16
