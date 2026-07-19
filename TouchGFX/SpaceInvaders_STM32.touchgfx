@@ -353,6 +353,51 @@
           },
           {
             "Type": "Image",
+            "Name": "bossBullet10",
+            "X": 160,
+            "Y": 129,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet9",
+            "X": 161,
+            "Y": 160,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet8",
+            "X": 137,
+            "Y": 160,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet7",
+            "X": 112,
+            "Y": 161,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
+            "Name": "bossBullet6",
+            "X": 88,
+            "Y": 160,
+            "Width": 16,
+            "Height": 16,
+            "RelativeFilename": "boss_bullets.png"
+          },
+          {
+            "Type": "Image",
             "Name": "bossBullet5",
             "X": 137,
             "Y": 129,
@@ -372,8 +417,8 @@
           {
             "Type": "Image",
             "Name": "bossBullet3",
-            "X": 160,
-            "Y": 129,
+            "X": 56,
+            "Y": 160,
             "Width": 16,
             "Height": 16,
             "RelativeFilename": "boss_bullets.png"

@@ -19,6 +19,7 @@ public:
     // ── HÀM LƯU VÀ LẤY ĐIỂM ──
     void saveGameResult(int score, bool victory);
     int getCurrentScore();
+    int getHighScore();
 
 private:
     Screen3Presenter();

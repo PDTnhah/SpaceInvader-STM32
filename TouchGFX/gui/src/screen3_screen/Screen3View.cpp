@@ -42,15 +42,20 @@ void Screen3View::setupScreen()
 {
     Screen3ViewBase::setupScreen();
 
-    // Trong TouchGFX Designer cần có:
-    // bossBullet1, bossBullet2, bossBullet3, bossBullet4, bossBullet5
     bossBullets[0] = &bossBullet1;
     bossBullets[1] = &bossBullet2;
     bossBullets[2] = &bossBullet3;
     bossBullets[3] = &bossBullet4;
     bossBullets[4] = &bossBullet5;
+    bossBullets[5] = &bossBullet6;
+    bossBullets[6] = &bossBullet7;
+    bossBullets[7] = &bossBullet8;
+    bossBullets[8] = &bossBullet9;
+    bossBullets[9] = &bossBullet10;
 
     resetGame();
+    updateHighScoreText();
+    updateScoreText();
 }
 
 void Screen3View::tearDownScreen()
@@ -175,6 +180,20 @@ void Screen3View::updateScoreText()
     scoreText.invalidate();
 }
 
+void Screen3View::updateHighScoreText()
+{
+    int savedHighScore = presenter->getHighScore();
+
+    if (score > savedHighScore)
+    {
+        savedHighScore = score;
+    }
+
+    Unicode::snprintf(highScoreBuf, 16, "%d", savedHighScore);
+    highScoreText.setWildcard1(highScoreBuf);
+    highScoreText.invalidate();
+}
+
 void Screen3View::updateMovementInput()
 {
     static bool lastHwLeft = false;
@@ -293,7 +312,7 @@ void Screen3View::fireBossBullets(bool isBurst)
                 bBulletX[i] = startX;
                 bBulletY[i] = startY;
                 bBulletDX[i] = 0;
-                bBulletDY[i] = B_BULLET_SPEED + 4; // Rất nhanh
+                bBulletDY[i] = B_BULLET_SPEED + 1; // Giảm tốc độ burst fire xuống
                 
                 if (bossBullets[i] != 0) {
                     bossBullets[i]->invalidate();
@@ -368,7 +387,7 @@ void Screen3View::fireBossBullets(bool isBurst)
                 uint32_t rngJitter = 0;
                 if (HAL_RNG_GenerateRandomNumber(&hrng, &rngJitter) == HAL_OK)
                 {
-                    bBulletDY[i] += (rngJitter % 3); // DY có thể lên 2, 3, hoặc 4
+                    bBulletDY[i] += (rngJitter % 2); // DY chỉ có thể lên 2 hoặc 3
                 }
             }
 
@@ -389,7 +408,7 @@ void Screen3View::bossLogic()
     if (!isEnraged && bossHP <= BOSS_MAX_HP / 2)
     {
         isEnraged = true;
-        currentBossSpeed = 3; // Nhanh hơn
+        currentBossSpeed = 2; // Nhanh hơn bình thường nhưng không quá nhanh (trước là 3)
     }
 
     // ── Burst Fire Logic ──
@@ -414,13 +433,13 @@ void Screen3View::bossLogic()
             uint32_t rngTeleport = 0;
             if (HAL_RNG_GenerateRandomNumber(&hrng, &rngTeleport) == HAL_OK)
             {
-                if (rngTeleport % 100 < 3) // 3% cơ hội teleport mỗi tick khi hồi chiêu xong
+                if (rngTeleport % 100 < 20) // 20% cơ hội teleport mỗi tick khi hồi chiêu xong (tăng mạnh để dễ demo)
                 {
                     boss.invalidate();
                     bossX = rngTeleport % (SCREEN_W - BOSS_W);
                     boss.setX(bossX);
                     boss.invalidate();
-                    teleportCooldown = 120; // Chờ 2 giây
+                    teleportCooldown = 60; // Chờ 1 giây
                 }
             }
         }
@@ -456,20 +475,20 @@ void Screen3View::bossLogic()
         {
             if (isEnraged)
             {
-                nextFireTick = tickCounter + 30 + (rngTime % 30); // 30-60 tick
-                if (((rngTime >> 16) % 2) == 0) // 50% cơ hội bắn bồi
+                nextFireTick = tickCounter + 120 + (rngTime % 60); // Cách nhau 120-180 tick (2-3 giây)
+                if (((rngTime >> 16) % 100) < 5) // Giữ nguyên 5% cơ hội bắn bồi
                 {
                     burstFireTimer = 15;
                 }
             }
             else
             {
-                nextFireTick = tickCounter + 50 + (rngTime % 61); // Cách nhau 50-110 tick
+                nextFireTick = tickCounter + 180 + (rngTime % 60); // Cách nhau 180-240 tick (3-4 giây)
             }
         }
         else
         {
-            nextFireTick = tickCounter + (isEnraged ? 35 : 75); // Fallback an toàn
+            nextFireTick = tickCounter + (isEnraged ? 150 : 200); // Fallback an toàn
         }
     }
 
@@ -648,6 +667,7 @@ void Screen3View::handleTickEvent()
                 score += 5;
 
                 updateScoreText();
+                updateHighScoreText();
 
                 if (bossHP <= 0)
                 {

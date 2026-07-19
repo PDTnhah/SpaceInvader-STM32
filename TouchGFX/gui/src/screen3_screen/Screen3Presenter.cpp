@@ -23,3 +23,8 @@ int Screen3Presenter::getCurrentScore()
 {
     return model->getCurrentScore();
 }
+
+int Screen3Presenter::getHighScore()
+{
+    return model->getHighScore();
+}
