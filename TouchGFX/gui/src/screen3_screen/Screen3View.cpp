@@ -54,6 +54,8 @@ void Screen3View::setupScreen()
     bossBullets[9] = &bossBullet10;
 
     resetGame();
+    updateHighScoreText();
+    updateScoreText();
 }
 
 void Screen3View::tearDownScreen()
@@ -176,6 +178,20 @@ void Screen3View::updateScoreText()
     Unicode::snprintf(scoreBuf, 16, "%d", score);
     scoreText.setWildcard1(scoreBuf);
     scoreText.invalidate();
+}
+
+void Screen3View::updateHighScoreText()
+{
+    int savedHighScore = presenter->getHighScore();
+
+    if (score > savedHighScore)
+    {
+        savedHighScore = score;
+    }
+
+    Unicode::snprintf(highScoreBuf, 16, "%d", savedHighScore);
+    highScoreText.setWildcard1(highScoreBuf);
+    highScoreText.invalidate();
 }
 
 void Screen3View::updateMovementInput()
@@ -651,6 +667,7 @@ void Screen3View::handleTickEvent()
                 score += 5;
 
                 updateScoreText();
+                updateHighScoreText();
 
                 if (bossHP <= 0)
                 {
